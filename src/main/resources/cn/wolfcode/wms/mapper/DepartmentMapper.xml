@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.wms.mapper.DepartmentMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.wms.domain.Department">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="sn" property="sn"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey">
+    delete from `department`
+    where id = #{id}
+  </delete>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+    insert into `department` (name, sn)
+    values (#{name}, #{sn})
+  </insert>
+    <update id="updateByPrimaryKey">
+    update `department`
+    set name = #{name},
+      sn = #{sn}
+    where id = #{id}
+  </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select id, name, sn
+    from `department`
+    where id = #{id}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select id, name, sn
+    from `department`
+  </select>
+    <select id="queryForCount" resultType="int">
+        SELECT count(id) FROM  department
+    </select>
+    <select id="queryForList" resultMap="BaseResultMap">
+      SELECT id,name,sn FROM  department
+      limit #{beginIndex},#{pageSize}
+
+    </select>
+</mapper>
+<!--<where>
+<if test="keyword!=null and keyword!=''">
+    AND (name LIKE concat('%',#{keyword},'%') or email like concat('%',#{keyword},'%'))
+</if>
+<if test="deptId!=null and deptId>0">
+    and dept_id=#{deptId}
+</if>
+</where>-->

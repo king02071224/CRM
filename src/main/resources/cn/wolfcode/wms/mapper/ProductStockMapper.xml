@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.wms.mapper.ProductStockMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.wms.domain.ProductStock">
+        <id column="id" property="id"/>
+        <result column="price" property="price"/>
+        <result column="storeNumber" property="storeNumber"/>
+        <result column="amount" property="amount"/>
+        <association property="product" javaType="Product" columnPrefix="p_">
+            <id column="id" property="id"></id>
+            <result property="brandName" column="brandName"></result>
+            <result property="brandId" column="brandId"></result>
+            <result property="sn" column="sn"></result>
+            <result property="name" column="name"></result>
+        </association>
+        <association property="depot" javaType="Depot" columnPrefix="d_">
+            <id column="id" property="id"></id>
+            <result column="name" property="name"></result>
+        </association>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM `productstock`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.wms.domain.ProductStock" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `productstock` (price, storeNumber, amount, product_id, depot_id)
+        VALUES (#{price}, #{storeNumber}, #{amount}, #{product.id}, #{depot.id})
+    </insert>
+    <update id="updateByPrimaryKey">
+        UPDATE `productstock`
+        SET price       = #{price},
+            storeNumber = #{storeNumber},
+            amount      = #{amount}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select id, price, storeNumber, amount, product_id, depot_id
+    from `productstock`
+    where id = #{id}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select id, price, storeNumber, amount, product_id, depot_id
+    from `productstock`
+  </select>
+    <select id="selectByProductIdAndDepotId" resultType="cn.wolfcode.wms.domain.ProductStock">
+      SELECT id, price, storeNumber, amount, product_id, depot_id
+      FROM productstock WHERE product_id=#{productId} and depot_id=#{depotId}
+  </select>
+    <!--分页条件-->
+    <select id="queryForCount" resultType="int">
+        SELECT COUNT(ps.id)
+        FROM productstock ps LEFT JOIN product p on ps.product_id=p.id
+        LEFT JOIN depot d ON ps.depot_id=d.id
+        <include refid="baseSql"></include>
+    </select>
+    <select id="queryForList" resultMap="BaseResultMap">
+        SELECT ps.id,d.name d_name,d.id d_id,p.sn p_sn,p.name p_name,p.brand_id p_brandId,p.brandName p_brandName,p.id p_id,
+        ps.storeNumber,ps.amount,ps.price
+        FROM productstock ps LEFT JOIN product p on ps.product_id=p.id
+        LEFT JOIN depot d ON ps.depot_id=d.id
+        <include refid="baseSql"></include>
+        limit #{beginIndex},#{pageSize}
+    </select>
+    <sql id="baseSql">
+        <where>
+            <if test="keywords!=null and keywords!=''">
+                and (p.name like concat('%',#{keywords},'%') or p.sn like concat('%',#{keywords},'%'))
+            </if>
+            <if test="depotId>0">
+                and d.id =#{depotId}
+            </if>
+            <if test="brandId>0">
+                and p.brand_id=#{brandId}
+            </if>
+            <if test="maxNumber!=null">
+                and ps.storeNumber &lt;=#{maxNumber}
+            </if>
+        </where>
+    </sql>
+</mapper>

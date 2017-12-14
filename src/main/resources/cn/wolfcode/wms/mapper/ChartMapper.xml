@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.wolfcode.wms.mapper.ChartMapper">
+    <select id="orderChart" resultType="map">
+        SELECT
+        <if test="groupName=='e.name'">
+            ${groupId} e_id,
+        </if>
+        ${groupName} groupBy,
+        sum(item.number) totalNumber,sum(item.amount) totalAmount
+        FROM orderbill bill
+        LEFT JOIN employee e ON bill.inputUser_id=e.id
+        LEFT JOIN orderbillitem item ON item.bill_id=bill.id
+        JOIN product p ON p.id=item.product_id
+        JOIN supplier s ON s.id=bill.supplier_id
+        <include refid="baseSql"></include>
+        <choose>
+            <when test="groupName!='e.name'">
+                GROUP by ${groupName}
+            </when>
+            <otherwise>
+                GROUP by ${groupId},${groupName}
+            </otherwise>
+        </choose>
+    </select>
+    <select id="saleChart" resultType="map">
+        SELECT
+        <if test="groupName=='sm.name'">
+            ${groupId} e_id,
+        </if>
+        ${groupName} groupBy,sum(sa.number) totalNumber,sum(sa.saleAmount) totalAmount,
+        sum(sa.saleAmount)-sum(sa.costAmount) grossProfit
+        FROM saleaccount sa JOIN employee sm ON sa.saleman_id=sm.id
+        JOIN product p ON sa.product_id=p.id
+        JOIN client c ON sa.client_id=c.id
+        <include refid="saleBaseSql"></include>
+        <choose>
+            <when test="groupName!='sm.name'">
+                GROUP by ${groupName}
+            </when>
+            <otherwise>
+                GROUP by ${groupId},${groupName}
+            </otherwise>
+        </choose>
+    </select>
+    <sql id="saleBaseSql">
+        <where>
+            <if test="beginTime!=null">
+                and sa.vdate>=#{beginTime}
+            </if>
+            <if test="endTime!=null">
+                and sa.vdate&lt;=#{endTime}
+            </if>
+            <if test="productName!=null and productName!=''">
+                and p.name like concat('%',#{productName},'%')
+            </if>
+            <if test="clientId!=-1">
+                and c.id=#{clientId}
+            </if>
+            <if test="brandId!=-1">
+                and p.brand_id=#{brandId}
+            </if>
+        </where>
+    </sql>
+    <sql id="baseSql">
+        <where>
+            <if test="beginTime!=null">
+                and bill.vdate>=#{beginTime}
+            </if>
+            <if test="endTime!=null">
+                and bill.vdate&lt;=#{endTime}
+            </if>
+            <if test="productName!=null and productName!=''">
+                and p.name like concat('%',#{productName},'%')
+            </if>
+            <if test="supplierId!=-1">
+                and s.id=#{supplierId}
+            </if>
+            <if test="brandId!=-1">
+                and p.brand_id=#{brandId}
+            </if>
+        </where>
+    </sql>
+</mapper>
