@@ -22,7 +22,7 @@ public class BaseBillDomain {
     private Date vdate;//订单生成的日期
     //审核的状态
     private Integer status=STATU_NOMAL;//状态
-
+    //xxxxx
     private BigDecimal totalAmount;//总数(钱)
     private BigDecimal totalNumber;//总数量,也就是商品的数量
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
